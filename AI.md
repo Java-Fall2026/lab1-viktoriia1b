@@ -1,21 +1,3 @@
-# Робота з AI
+# AI Use
 
-*Заповніть один із двох варіантів і видаліть другий.*
-
-## Якщо ви користувалися AI
-
-**Інструменти й промпти** (ключові — дослівно):
-
-**Що AI зробив неправильно або не так, як вимагає завдання, і як ви це помітили:**
-
-**Що виправили самостійно і чому:**
-
-## Якщо ви не користувалися AI
-
-Покажіть AI одне своє рішення (клас, валідацію, `equals`) і попросіть оцінити.
-
-**Що показували:**
-
-**З чим у його відповіді погоджуєтесь:**
-
-**З чим не погоджуєтесь і чому:**
+I used Codex to implement Laboratory Work 1, Variant 9, using the attached `codex_prompt_java_lab1_variant9.md` as the task prompt. The key instruction was: “Implement Variant 9 — Event & Conference Management (Управління конференціями).” Codex inspected the existing `BaseEntity`, repository layout, and Java 21 Gradle configuration, then added the conference entities, utilities, and console demonstration. The implementation choice for `EventRegistration.equals()` and `hashCode()` is the combination of event, participant, ticket type, and registration date, which represents one attendee's registration for a specific ticket on a specific date. The event duration uses an inclusive calendar-day count, so an event starting and ending on the same date lasts one day. The project was checked with the Gradle build and run commands; review the console output and source to confirm the validation, normalization, equality, and computed-method behavior.
