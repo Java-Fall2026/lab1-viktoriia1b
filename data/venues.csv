@@ -1,0 +1,8 @@
+venueCode,name,capacity
+HALL-A,Main Hall,300
+HALL-B,Innovation Room,120
+HALL-C,Science Auditorium,450
+,Missing Code Hall,100
+HALL-D,,200
+HALL-E,Invalid Capacity,large
+HALL-F,Zero Capacity,0

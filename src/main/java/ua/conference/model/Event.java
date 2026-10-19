@@ -19,10 +19,10 @@ public class Event {
         this.category = ConferenceUtils.requireNotNull(category, "Category");
         this.startDate = ConferenceUtils.requireNotNull(startDate, "Start date");
         this.endDate = ConferenceUtils.requireNotNull(endDate, "End date");
-        validateDateRange();
+        validateDateRange(this.startDate, this.endDate);
     }
 
-    private void validateDateRange() {
+    private static void validateDateRange(LocalDate startDate, LocalDate endDate) {
         if (endDate.isBefore(startDate)) {
             throw new IllegalArgumentException("End date must be on or after start date");
         }
@@ -37,13 +37,16 @@ public class Event {
 
     public void setTitle(String title) { this.title = ConferenceUtils.requireNotBlank(title, "Title"); }
     public void setCategory(Category category) { this.category = ConferenceUtils.requireNotNull(category, "Category"); }
+
     public void setStartDate(LocalDate startDate) {
-        this.startDate = ConferenceUtils.requireNotNull(startDate, "Start date");
-        validateDateRange();
+        LocalDate checkedStartDate = ConferenceUtils.requireNotNull(startDate, "Start date");
+        validateDateRange(checkedStartDate, endDate);
+        this.startDate = checkedStartDate;
     }
+
     public void setEndDate(LocalDate endDate) {
-        this.endDate = ConferenceUtils.requireNotNull(endDate, "End date");
-        validateDateRange();
+        LocalDate checkedEndDate = ConferenceUtils.requireNotNull(endDate, "End date");
+        validateDateRange(startDate, checkedEndDate);
+        this.endDate = checkedEndDate;
     }
 }
-
