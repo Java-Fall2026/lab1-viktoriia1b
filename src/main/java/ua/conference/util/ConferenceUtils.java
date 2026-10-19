@@ -1,15 +1,13 @@
 package ua.conference.util;
 
+import ua.conference.model.Category;
 import ua.conference.model.Event;
 import ua.conference.model.EventRegistration;
-
+import ua.conference.model.TicketType;
 import java.time.temporal.ChronoUnit;
 
-/** Public validation, normalization, and computed-method entry point for conference models. */
+/** Validation and domain calculations for conference entities. */
 public final class ConferenceUtils {
-    private static final String[] CATEGORIES = {"TECH", "SCIENCE", "BUSINESS", "ART"};
-    private static final String[] TICKET_TYPES = {"STANDARD", "VIP", "SPEAKER", "PRESS"};
-
     private ConferenceUtils() { }
 
     public static String requireNotBlank(String value, String fieldName) {
@@ -20,19 +18,6 @@ public final class ConferenceUtils {
         return FormatHelper.lowercase(requireNotBlank(value, "Email"));
     }
 
-    public static String normalizeCategory(String value) {
-        return normalizeAllowed(value, "Category", CATEGORIES);
-    }
-
-    public static String normalizeTicketType(String value) {
-        return normalizeAllowed(value, "Ticket type", TICKET_TYPES);
-    }
-
-    private static String normalizeAllowed(String value, String fieldName, String[] allowed) {
-        String normalized = FormatHelper.uppercase(requireNotBlank(value, fieldName));
-        return ValidationHelper.requireAllowed(normalized, fieldName, allowed);
-    }
-
     public static <T> T requireNotNull(T value, String fieldName) {
         return ValidationHelper.requireNotNull(value, fieldName);
     }
@@ -41,15 +26,33 @@ public final class ConferenceUtils {
         return ValidationHelper.requirePositive(value, fieldName);
     }
 
+    public static String categoryDescription(Category category) {
+        return switch (requireNotNull(category, "Category")) {
+            case TECH -> "Технологічна конференція";
+            case SCIENCE -> "Наукова конференція";
+            case BUSINESS -> "Бізнес-конференція";
+            case ART -> "Мистецька подія";
+        };
+    }
+
+    public static String ticketMessage(TicketType ticketType) {
+        return switch (requireNotNull(ticketType, "Ticket type")) {
+            case STANDARD -> "Стандартний квиток";
+            case VIP -> "VIP-квиток";
+            case SPEAKER -> "Квиток доповідача";
+            case PRESS -> "Акредитація преси";
+        };
+    }
+
     /** Returns the inclusive calendar-day count, so a one-day event lasts one day. */
     public static long eventDays(Event event) {
-        Event checked = ValidationHelper.requireNotNull(event, "Event");
+        Event checked = requireNotNull(event, "Event");
         return ChronoUnit.DAYS.between(checked.getStartDate(), checked.getEndDate()) + 1;
     }
 
-    /** Returns calendar days from registration through the event start; same-day registration is zero. */
+    /** Returns calendar days between registration and the event start date. */
     public static long daysBeforeEvent(EventRegistration registration) {
-        EventRegistration checked = ValidationHelper.requireNotNull(registration, "Registration");
-        return ChronoUnit.DAYS.between(checked.getRegistrationDate(), checked.getEvent().getStartDate());
+        EventRegistration checked = requireNotNull(registration, "Registration");
+        return ChronoUnit.DAYS.between(checked.registrationDate(), checked.event().getStartDate());
     }
 }
