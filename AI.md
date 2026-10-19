@@ -1,205 +1,87 @@
-# Codex Prompt --- Java Lab 1, Variant 9: Event & Conference Management
+# Task Context & Prompt for Refactoring Java Lab 1 to Lab 2 (Variant 9: Event & Conference Management)
 
-You are working in the existing Java repository for **Laboratory Work
-№1: Java Basics and Access Modifiers**.
+## 1. Task Context & Environment
+- **Branch Context:** You are currently checked out on the `lab2` branch in an existing Java project built in Lab 1.
+- **Goal:** Refactor and update the codebase to satisfy all Lab 2 requirements (Records, Enums, and Switch Expressions) based on **Variant 9: Event & Conference Management**.
+- **Namespace:** `ua.conference`
 
-## Source requirements
+---
 
-Read and follow both documents before changing code:
+## 2. Refactoring Rules & Requirements
 
-1.  Lab instructions:
-    https://github.com/Java-Univer-2025/Java-Univer-2025.github.io/blob/main/lab-01/README.md
-2.  Domain profiles:
-    https://github.com/Java-Univer-2025/Java-Univer-2025.github.io/blob/main/lab-01/tasks_2025_domains.md#варіант-9-управління-конференціями
+### 1. Enums (`ua.conference.model`)
+- Replace String-based fixed choice fields (`category`, `ticketType`, etc.) with `enum` types.
+- Ensure all enum constants match the domain specification:
+  - **`Category`**: `TECH`, `SCIENCE`, `BUSINESS`, `ART`
+  - **`TicketType`**: `STANDARD`, `VIP`, `SPEAKER`, `PRESS`
+- **At least one enum MUST have custom fields and a constructor.**
+  - Create a custom property on `TicketType` (e.g., `private final double discountFactor` or `priceMultiplier`) with a constructor and getter method.
 
-Implement **Variant 9 --- Event & Conference Management (Управління
-конференціями)**. Treat the repository and these instructions as the
-source of truth. First inspect the existing project structure and
-`ua.common.BaseEntity`; do not replace or modify `BaseEntity`.
+### 2. Records & Class Hierarchy Changes
+- **Remove `BaseEntity`:** Since Java `record`s cannot extend classes, remove inheritance from `BaseEntity`. Manage `createdAt` or standard identifiers within the records directly if needed.
+- **Convert Immutable Entities to `record`:**
+  - Entities whose fields do NOT change after instantiation (no `✎` mark) MUST be converted to `record`.
+  - Place validation checks inside **compact constructors** (e.g., `public Participant { ValidationHelper.requireNonEmpty(fullName, "fullName"); ... }`).
+- **Keep Mutable Classes as Standard Classes:**
+  - Entities with fields marked as editable (`✎`) must remain standard `class`es (e.g., `Event` or `EventRegistration` depending on mutable status).
+- **Clean up Records:**
+  - Explicitly **remove** all boilerplate getters, `equals()`, `hashCode()`, and `toString()` methods from records—let the Java compiler generate them automatically.
 
-## Variant 9 domain model
+### 3. Switch Expressions (`ua.conference.util.ConferenceUtils`)
+Implement **two** modern Java 14+ `switch` expressions (using arrow `->` syntax, returning values):
+1. **Exhaustive Switch over Enum:** A `switch` expression operating on your custom Enum (`Category` or `TicketType`) without a `default` clause, listing all enum constants explicitly.
+2. **Behavioral Switch:** A `switch` expression determining business rules or domain choices (e.g., pricing multipliers, user status messages, or permission logic).
 
-Create exactly these five domain entities, all as ordinary Java classes
-(do not use `record`). Every entity must extend `ua.common.BaseEntity`,
-and each constructor must begin with `super()`.
+### 4. Language & Documentation Standards
+- **English Only:** All code comments, Javadoc, field names, and exception messages **must** be written in English.
+- **Ukrainian for UI/Console Output:** User-facing strings in `Main.java` (system outputs) must be in Ukrainian.
 
-### 1. `Participant`
+### 5. Application Entry Point (`Main.java`)
+Update `Main.java` to demonstrate all newly refactored features:
+1. Instantiation of `record` objects and access to their components.
+2. `enum` functionality: `values()`, access to custom enum fields/methods, and `valueOf()` handling invalid string input in a `try-catch` block.
+3. Execution and printed results of **both** new `switch` expressions.
+4. Attempting to create a `record` with invalid data to trigger `IllegalArgumentException` from its compact constructor.
+5. Equality demonstration: comparing two identical `record` instances using generated `equals()` and `hashCode()`.
+6. Record output demonstrating generated `toString()`.
 
--   `String email` --- identity key; must not be null or blank, trim
-    whitespace, and normalize to lowercase.
--   `String fullName` --- must not be null or blank.
--   `String organization` --- must not be null or blank.
--   Include public getters and no setters.
+---
 
-### 2. `Venue`
+## 3. Variant 9 Entity Profiles & Domain Data
 
--   `String venueCode` --- identity key; must not be null or blank
-    (example: `"HALL-A"`).
--   `String name` --- must not be null or blank.
--   `int capacity` --- must be strictly greater than zero.
--   Include public getters and no setters.
+### `Participant` (Record candidate)
+- `email` (String, key, lowercased, non-empty)
+- `fullName` (String, non-empty)
+- `organization` (String, non-empty)
 
-### 3. `Event`
+### `Venue` (Record candidate)
+- `venueCode` (String, key, non-empty, e.g., "HALL-A")
+- `name` (String, non-empty)
+- `capacity` (int, strictly > 0)
 
--   `String eventCode` --- identity key; must not be null or blank.
--   `String title` --- must not be null or blank.
--   `Venue venue` --- must not be null.
--   `String category` --- must be normalized to uppercase and must be
-    one of `TECH`, `SCIENCE`, `BUSINESS`, `ART`.
--   `LocalDate startDate` --- must not be null.
--   `LocalDate endDate` --- must not be null and must be on or after
-    `startDate`.
--   Include public getters and no setters.
+### `Event`
+- `eventCode` (String, key, non-empty)
+- `title` (String, non-empty) ✎
+- `venue` (Venue, non-null)
+- `category` (Category Enum: `TECH`, `SCIENCE`, `BUSINESS`, `ART`) ✎
+- `startDate` (LocalDate, non-null) ✎
+- `endDate` (LocalDate, non-null, >= startDate) ✎
 
-### 4. `EventRegistration` --- entity without a predefined identity key
+### `EventRegistration`
+- `event` (Event, non-null)
+- `participant` (Participant, non-null)
+- `ticketType` (TicketType Enum: `STANDARD`, `VIP`, `SPEAKER`, `PRESS`)
+- `registrationDate` (LocalDate, non-null, <= event.getStartDate())
 
--   `Event event` --- must not be null.
--   `Participant participant` --- must not be null.
--   `String ticketType` --- normalize to uppercase and allow only
-    `STANDARD`, `VIP`, `SPEAKER`, `PRESS`.
--   `LocalDate registrationDate` --- must not be null and must be on or
-    before `event.getStartDate()`.
--   Include public getters and no setters.
--   Choose a meaningful set of fields for `equals()` and `hashCode()`
-    because this entity has no predefined key. Use the same fields in
-    both methods and explain the choice in a brief comment or project
-    documentation.
+### Domain Utility Methods (`ConferenceUtils`)
+- `eventDays(Event event)`: Returns the total duration of the event in days.
+- `daysBeforeEvent(EventRegistration reg)`: Calculates days between registration and event start date.
 
-## Required project structure and access rules
+---
 
--   Use the repository's existing conventions and package layout. Create
-    `ua.<domain>.model` and `ua.<domain>.util`, choosing a domain
-    package name appropriate for conference/event management (for
-    example, `ua.conference`).
--   Reuse the existing `ua.common.BaseEntity`; do not edit it.
--   Every entity field must be `private`; getters must be `public`.
--   There are no mutable (`✎`) fields in Variant 9, so do not add
-    setters to these five entities.
--   Implement `equals()`, `hashCode()`, and `toString()` in every
-    entity.
--   `equals()` must compare runtime types using `getClass()`, not
-    `instanceof`.
--   For identity-key entities, use only the marked key field in
-    `equals()` and `hashCode()`:
-    -   `Participant`: `email`
-    -   `Venue`: `venueCode`
-    -   `Event`: `eventCode`
--   For `EventRegistration`, use your documented, consistent field
-    selection.
--   Do not include inherited `createdAt` in `equals()` or `hashCode()`.
--   Each `toString()` must include the class name, all declared fields,
-    and inherited `createdAt`.
--   Use `LocalDate` for all dates.
+## 4. Verification Step
+Make sure all existing and updated code compiles cleanly without build errors:
+- Execute `./gradlew build`
+- Execute `./gradlew run`
 
-## Utility classes
-
-In the `util` package, implement these three non-instantiable utility
-classes. Each must have a private constructor:
-
-1.  `ValidationHelper` --- **package-private**. Provide reusable
-    validation methods such as `requireNotNull`, `requireNotBlank`, and
-    positive-integer validation. Throw `IllegalArgumentException` with a
-    clear English message stating what was expected and, where
-    practical, the value received.
-2.  `FormatHelper` --- **package-private**. Provide string normalization
-    helpers, including trimming and uppercase/lowercase normalization as
-    appropriate.
-3.  A public domain utility class, such as `ConferenceUtils` ---
-    **public**. It is the only utility entry point available to classes
-    in the `model` package. It should delegate to `ValidationHelper` and
-    `FormatHelper` internally.
-
-Because `ValidationHelper` and `FormatHelper` are package-private and
-are in a different package from the model classes, model classes must
-not access them directly. Expose the required validation and
-normalization operations through `ConferenceUtils`.
-
-Implement the two computed methods in `ConferenceUtils`; do not store
-their results in entity fields:
-
--   `eventDays(Event)` --- calculate the number of days an event lasts.
-    Since `endDate` may equal `startDate`, define the result
-    consistently with the domain meaning of duration and document
-    whether the count is inclusive. Prefer an inclusive calendar-day
-    count (`ChronoUnit.DAYS.between(startDate, endDate) + 1`) so a
-    one-day event returns `1`.
--   `daysBeforeEvent(EventRegistration)` --- calculate the number of
-    calendar days between `registrationDate` and the event's `startDate`
-    using
-    `ChronoUnit.DAYS.between(registrationDate, event.getStartDate())`. A
-    registration on the event's start date returns `0`.
-
-Validate arguments passed to computed methods and avoid null-related
-failures.
-
-## Validation and exception messages
-
--   Validate all domain rules in constructors.
--   Use `IllegalArgumentException` for invalid input.
--   Normalize strings before storing them.
--   Category and ticket type validation errors must list the allowed
-    values.
--   Keep comments, Javadocs, and exception messages in **English**.
-    Ukrainian is allowed for user-facing output in `Main`.
-
-## Factory methods
-
-Following the lab README, choose two appropriate entity classes to use
-static factory methods:
-
--   Make each selected class's constructor `private`.
--   Add a `public static of(...)` factory method that creates and
-    returns the entity.
--   Keep public constructors for the other three entity classes.
--   Ensure `Main` demonstrates both normal constructor-based creation
-    and factory-based creation.
-
-## `Main` demonstration
-
-Create or update `Main` to run from the console without requiring
-interactive keyboard input. Demonstrate all of the following:
-
-1.  Create objects both through public constructors and through the two
-    static `of(...)` factory methods.
-2.  Show normalization in action, including an email such as
-    `"  ALICE@EXAMPLE.COM "` becoming `"alice@example.com"` and a
-    category such as `" tech "` becoming `"TECH"`.
-3.  Trigger at least three distinct validation errors, catch each with
-    `catch (IllegalArgumentException e)`, and print `e.getMessage()`.
-4.  Attempt to create an invalid object or otherwise demonstrate that
-    invalid data cannot enter the model.
-5.  Compare two separate objects with identical identity data using
-    `==`, `equals()`, and `hashCode()`, and compare objects with
-    different identity keys to show that `equals()` returns `false`.
-6.  Call and display both computed methods: `eventDays(Event)` and
-    `daysBeforeEvent(EventRegistration)`.
-7.  Print all five entity types using their `toString()` methods.
-8.  Include one commented-out line that intentionally would not compile
-    because it accesses `ValidationHelper` outside its package or calls
-    a private constructor; explain in an English comment why it is
-    inaccessible.
-
-Use dates that make the demonstration deterministic and valid relative
-to the domain rules. Ensure each registration date is on or before its
-event start date.
-
-## Quality requirements
-
--   Follow the repository's Java version, naming conventions, and build
-    system. Do not add dependencies unless necessary.
--   Inspect existing files before editing; preserve unrelated work and
-    avoid overwriting files unnecessarily.
--   Keep the solution beginner-friendly and readable, without
-    unnecessary frameworks or abstractions.
--   Ensure all five classes, utility classes, and `Main` compile
-    together.
--   Run the project's available build/tests (or compile command if no
-    build tool is configured). Fix all errors caused by your changes.
--   Do not claim that tests passed unless you actually ran them.
--   At the end, summarize the files created/changed, explain key
-    implementation choices (especially
-    `EventRegistration.equals/hashCode` and the inclusive `eventDays`
-    calculation), and provide the exact command used to build/run the
-    project.
--   Do not stop after giving advice: make the changes directly in the
-    repository.
+Please apply all necessary modifications to the existing files on the `lab2` branch.

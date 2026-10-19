@@ -1,63 +1,46 @@
 package ua.conference;
 
+import ua.conference.model.Category;
 import ua.conference.model.Event;
 import ua.conference.model.EventRegistration;
 import ua.conference.model.Participant;
+import ua.conference.model.TicketType;
 import ua.conference.model.Venue;
 import ua.conference.util.ConferenceUtils;
-
 import java.time.LocalDate;
 
 public class Main {
     public static void main(String[] args) {
-        Participant alice = Participant.of("  ALICE@EXAMPLE.COM ", "Alice Example", "Example Labs");
-        Participant sameAlice = Participant.of("alice@example.com", "Alice E.", "Another description");
-        Participant bob = Participant.of("bob@example.com", "Bob Example", "Example Labs");
+        Participant participant = new Participant(" ALICE@EXAMPLE.COM ", "Alice Example", "Example Labs");
+        Participant identicalParticipant = new Participant("alice@example.com", "Alice Example", "Example Labs");
         Venue venue = new Venue("HALL-A", "Main Hall", 300);
-        Event event = Event.of("JAVA-2026", "Java Conference", venue, " tech ",
+        Event event = new Event("JAVA-2026", "Java Conference", venue, Category.TECH,
                 LocalDate.of(2026, 11, 10), LocalDate.of(2026, 11, 12));
-        EventRegistration registration = new EventRegistration(event, alice, " standard ",
+        EventRegistration registration = new EventRegistration(event, participant, TicketType.STANDARD,
                 LocalDate.of(2026, 11, 5));
 
-        System.out.println("Email normalization: " + alice.getEmail());
-        System.out.println("Category normalization: " + event.getCategory());
-
+        System.out.println("Електронна пошта учасника: " + participant.email());
+        System.out.println("Усі категорії: ");
+        for (Category category : Category.values()) System.out.println("  " + category);
+        System.out.println("Опис категорії: " + ConferenceUtils.categoryDescription(event.getCategory()));
+        System.out.println("Правило квитка: " + ConferenceUtils.ticketMessage(registration.ticketType()));
+        System.out.println("Множник ціни VIP-квитка: " + TicketType.VIP.getPriceMultiplier());
         try {
-            new Venue("HALL-B", "Small Hall", 0);
-        } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
-        }
-        try {
-            Event.of("BAD-CATEGORY", "Invalid category", venue, "music",
-                    LocalDate.of(2026, 11, 10), LocalDate.of(2026, 11, 10));
-        } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
-        }
-        try {
-            new EventRegistration(event, alice, "GOLD", LocalDate.of(2026, 11, 5));
-        } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
-        }
-        try {
-            new EventRegistration(event, bob, "VIP", LocalDate.of(2026, 11, 11));
-        } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
+            System.out.println(TicketType.valueOf("GOLD"));
+        } catch (IllegalArgumentException exception) {
+            System.out.println("Невідомий тип квитка: GOLD");
         }
 
-        System.out.println("Same instance (==): " + (alice == sameAlice));
-        System.out.println("Same identity (equals): " + alice.equals(sameAlice));
-        System.out.println("Same identity hash codes: " + (alice.hashCode() == sameAlice.hashCode()));
-        System.out.println("Different identity (equals): " + alice.equals(bob));
-        System.out.println("Event duration: " + ConferenceUtils.eventDays(event) + " days");
-        System.out.println("Days before event: " + ConferenceUtils.daysBeforeEvent(registration));
+        try {
+            new Participant("", "Invalid", "Example Labs");
+        } catch (IllegalArgumentException exception) {
+            System.out.println("Перевірка даних: " + exception.getMessage());
+        }
 
-        System.out.println(alice);
-        System.out.println(venue);
-        System.out.println(event);
-        System.out.println(registration);
-        System.out.println(bob);
-
-        // ValidationHelper is package-private, so code in this package cannot access it.
-        // ValidationHelper.requireNotBlank("x", "value");
+        System.out.println("Рівні записи: " + participant.equals(identicalParticipant));
+        System.out.println("Однакові хеш-коди: " + (participant.hashCode() == identicalParticipant.hashCode()));
+        System.out.println("Учасник: " + participant);
+        System.out.println("Тривалість події: " + ConferenceUtils.eventDays(event) + " днів");
+        System.out.println("Днів до початку події: " + ConferenceUtils.daysBeforeEvent(registration));
     }
 }
