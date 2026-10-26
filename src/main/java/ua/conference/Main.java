@@ -6,8 +6,12 @@ import ua.conference.model.EventRegistration;
 import ua.conference.model.Participant;
 import ua.conference.model.TicketType;
 import ua.conference.model.Venue;
+import ua.conference.loader.VenueLoader;
 import ua.conference.util.ConferenceUtils;
+
+import java.nio.file.Path;
 import java.time.LocalDate;
+import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
@@ -21,12 +25,14 @@ public class Main {
 
         System.out.println("Електронна пошта учасника: " + participant.email());
         System.out.println("Усі категорії: ");
-        for (Category category : Category.values()) System.out.println("  " + category);
+        for (Category category : Category.values()) {
+            System.out.println("  " + category);
+        }
         System.out.println("Опис категорії: " + ConferenceUtils.categoryDescription(event.getCategory()));
         System.out.println("Правило квитка: " + ConferenceUtils.ticketMessage(registration.ticketType()));
         System.out.println("Множник ціни VIP-квитка: " + TicketType.VIP.getPriceMultiplier());
         try {
-            System.out.println(TicketType.valueOf("GOLD"));
+            TicketType.valueOf("GOLD");
         } catch (IllegalArgumentException exception) {
             System.out.println("Невідомий тип квитка: GOLD");
         }
@@ -42,5 +48,15 @@ public class Main {
         System.out.println("Учасник: " + participant);
         System.out.println("Тривалість події: " + ConferenceUtils.eventDays(event) + " днів");
         System.out.println("Днів до початку події: " + ConferenceUtils.daysBeforeEvent(registration));
+
+        List<Venue> loadedVenues = VenueLoader.load(Path.of("data", "venues.csv"));
+        System.out.println("Успішно завантажено майданчиків: " + loadedVenues.size());
+        VenueLoader.load(Path.of("data", "missing-venues.csv"));
+
+        try {
+            event.setTitle(" ");
+        } catch (IllegalArgumentException exception) {
+            System.out.println("Помилка перевірки назви події: " + exception.getMessage());
+        }
     }
 }
